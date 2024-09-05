@@ -1,9 +1,10 @@
 // /app/details.js
 import FilterPayment from "@/components/Filter/Filter";
+import { getPaymentIntents } from "@/components/services";
 import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
-import React from "react";
-import { View, Text, StyleSheet, TouchableOpacity, ScrollView } from "react-native";
+import React, { useEffect, useState } from "react";
+import { View, Text, StyleSheet, TouchableOpacity, ScrollView, FlatList } from "react-native";
 
 interface TransactionItemProps {
   name: string;
@@ -12,73 +13,162 @@ interface TransactionItemProps {
   positive?: boolean;
 }
 
+interface PaymentIntent {
+  id: string;
+  amount: number;
+  currency: string;
+  // Add other fields as needed based on the Stripe API response
+}
+
+
+
 export default function History() {
-    
-    const router = useRouter();
+  // const [paymentIntents, setPaymentIntents] = useState<PaymentIntent[]>([]);
+  const router = useRouter();
+
+   const [paymentIntents, setPaymentIntents] = useState([]);
+   const [loading, setLoading] = useState(true);
+   const [error, setError] = useState(null);
+
+     useEffect(() => {
+       fetchPaymentIntents();
+     }, []);
+
+     const fetchPaymentIntents = async () => {
+       try {
+         setLoading(true);
+         const data = await getPaymentIntents();
+         setPaymentIntents(data.data); // Assuming the payment intents are in the 'data' property
+         setLoading(false);
+       } catch (err) {
+         setError("Failed to fetch payment intents");
+         setLoading(false);
+       }
+     };
+
+     if (loading) {
+       return (
+         <View>
+           <Text>Loading...</Text>
+         </View>
+       ); 
+     }
+
+
+  // useEffect(() => {
+  //   const fetchPaymentIntents = async () => {
+  //     try {
+  //       const response = await getPaymentIntents();
+  //       setPaymentIntents(response.data); // Assuming response.data contains an array of payment intents
+  //     } catch (error) {
+  //       console.error("Error fetching payment intents:", error);
+  //     }
+  //   };
+
+  //   fetchPaymentIntents();
+  // }, []);
 
   return (
-    <View style={styles.historyContainer}>
-        <View><FilterPayment/></View>
+    <>
       <View style={styles.historyHeader}>
         <Text style={styles.historyTitle}>September 2024</Text>
         <TouchableOpacity>
-          <Text style={styles.seeAllText}>800</Text>
+          {/* <Text style={styles.seeAllText}>800</Text> */}
         </TouchableOpacity>
       </View>
-      <ScrollView>
-        <TransactionItem
-          name="Billal"
-          date="1 Sept 2024 at 4:20 PM"
-          positive={false}
-          amount="-$300"
+      <View style={styles.historyContainer}>
+        <FlatList
+          data={paymentIntents}
+          renderItem={renderItem}
+          keyExtractor={item => item.id}
         />
-        <TransactionItem
-          name="Self"
-          date="1 Sept 2024 at 2:42 PM"
-          amount="+$500"
-          positive
-        />
-        <TransactionItem
-          name="Billal"
-          date="1 Sept 2024 at 2:42 PM"
-          amount="+$500"
-          positive
-        />
-        <TransactionItem
-          name="Bhati"
-          date="1 Sept 2024 at 2:42 PM"
-          amount="+$500"
-          positive
-        />
-      </ScrollView>
-    </View>
+      </View>
+      <View style={styles.historyContainer}>
+        {/* <View>
+          <FilterPayment />
+        </View>
+        <View style={styles.historyHeader}>
+          <Text style={styles.historyTitle}>September 2024</Text>
+          <TouchableOpacity>
+            <Text style={styles.seeAllText}>800</Text>
+          </TouchableOpacity>
+        </View> */}
+        {/* <ScrollView>
+          <TransactionItem
+            name="Billal"
+            date="1 Sept 2024 at 4:20 PM"
+            positive={false}
+            amount="-$300"
+          />
+          <TransactionItem
+            name="Self"
+            date="1 Sept 2024 at 2:42 PM"
+            amount="+$500"
+            positive
+          />
+          <TransactionItem
+            name="Billal"
+            date="1 Sept 2024 at 2:42 PM"
+            amount="+$500"
+            positive
+          />
+          <TransactionItem
+            name="Bhati"
+            date="1 Sept 2024 at 2:42 PM"
+            amount="+$500"
+            positive
+          />
+        </ScrollView> */}
+      </View>
+    </>
   );
 }
 
-const TransactionItem: React.FC<TransactionItemProps> = ({
-  name,
-  date,
-  amount,
-  positive,
-}) => (
-  <View style={styles.transactionItem}>
-    <View style={styles.transactionIcon}>
-      <Text style={styles.transactionInitial}>{name[0]}</Text>
+
+
+  const renderItem = ({ item }) => (
+    <View style={styles.transactionItem}>
+      <View style={styles.transactionIcon}>
+        <Text>W</Text>
+      </View>
+      {/* <Text>ID: {item.id}</Text> */}
+      <View style={styles.transactionDetails}>
+        <Text style={styles.transactionName}>In Wallet</Text>
+        {/* <Text style={styles.transactionDate}>43</Text> */}
+      </View>
+      <View>
+        <Text style={[styles.transactionAmount]}> $ {item.amount}</Text>
+      </View>
+      {/* <Text>Status: {item.status}</Text> */}
+      {/* <Text style={styles.transactionDate}>Created: {item.created}</Text> */}
     </View>
-    <View style={styles.transactionDetails}>
-      <Text style={styles.transactionName}>{name}</Text>
-      <Text style={styles.transactionDate}>{date}</Text>
-    </View>
-    <Text
-      style={[
-        styles.transactionAmount,
-        positive ? styles.positiveAmount : styles.negativeAmount,
-      ]}
-    >
-      {amount}
-    </Text>
-  </View>
-);
+  );
+
+// const TransactionItem: React.FC<TransactionItemProps> = ({
+//   name,
+//   date,
+//   amount,
+//   positive,
+//   item
+// }) => (
+//   <View style={styles.transactionItem}>
+//     <View style={styles.transactionIcon}>
+//       <Text style={styles.transactionInitial}>{name[0]}</Text>
+//     </View>
+//     <View style={styles.transactionDetails}>
+//       <Text style={styles.transactionName}>{name}</Text>
+//       <Text style={styles.transactionDate}>{date}</Text>
+//     </View>
+//     <Text
+//       style={[
+//         styles.transactionAmount,
+//         positive ? styles.positiveAmount : styles.negativeAmount,
+//       ]}
+//     >
+//       {amount}
+//     </Text>
+//   </View>
+// );
 
 const styles = StyleSheet.create({
 //   container: {
@@ -217,6 +307,10 @@ const styles = StyleSheet.create({
     paddingLeft: 10,
     paddingRight: 10,
   },
+  // transactionItems:{
+  //   display:"flex",
+  //   justifyContent: "space-between",
+  // },
   transactionIcon: {
     width: 40,
     height: 40,
@@ -245,6 +339,7 @@ const styles = StyleSheet.create({
   transactionAmount: {
     fontSize: 16,
     fontWeight: "bold",
+    color: "#2196f3",
   },
   positiveAmount: {
     color: "#4caf50",

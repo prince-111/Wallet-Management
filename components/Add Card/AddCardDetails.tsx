@@ -9,6 +9,8 @@ import {
   Button,
 } from "react-native";
 import { FontAwesome, Ionicons, SimpleLineIcons } from "@expo/vector-icons";
+import { CardField } from "@stripe/stripe-react-native";
+// import PaymentScreen from "../PaymentScreen";
 
 export default function AddCardDetails() {
   const [modalVisible, setModalVisible] = useState(false);
@@ -19,6 +21,8 @@ export default function AddCardDetails() {
   const [showCvv, setShowCvv] = useState(false);
   const [amount, setAmount] = useState("");
   const [step, setStep] = useState(1); // 1 for card details, 2 for enter amount
+  const [card, setCard] = useState(null);
+  
 
   return (
     <View style={styles.container}>
@@ -37,12 +41,36 @@ export default function AddCardDetails() {
         visible={modalVisible}
         onRequestClose={() => setModalVisible(!modalVisible)}
       >
+        {/* <View>
+          <CardField
+            postalCodeEnabled={true}
+            placeholder={{
+              number: "4242 4242 4242 4242",
+            }}
+            cardStyle={{
+              backgroundColor: "#FFFFFF",
+              textColor: "#000000",
+            }}
+            style={{
+              width: "100%",
+              height: 50,
+              marginVertical: 30,
+            }}
+            onCardChange={cardDetails => {
+              setCard(cardDetails);
+            }}
+            onFocus={focusedField => {
+              console.log("focusField", focusedField);
+            }}
+          />
+        </View> */}
         <View style={styles.modalOverlay}>
           <View style={styles.modalView}>
             {step === 1 ? (
               <>
                 <Text style={styles.modalTitle}>Enter Card Details</Text>
                 {/* <SimpleLineIcons name="credit-card" size={74} color="black" /> */}
+
                 <TextInput
                   style={styles.input}
                   placeholder="Card Number"
